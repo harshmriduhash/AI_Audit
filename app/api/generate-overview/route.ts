@@ -1,17 +1,18 @@
-import { NextResponse } from 'next/server'
-import OpenAI from 'openai'
+import { NextResponse } from "next/server";
+import OpenAI from "openai";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
-})
+});
 
 export async function POST(req: Request) {
   try {
-    const { businessDetails, teamDetails, auditAnswers } = await req.json()
+    const { businessDetails, teamDetails, auditAnswers } = await req.json();
 
-    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [{
-      role: "system",
-      content: `You are an AI integration expert. Analyze the following business information and create a comprehensive overview and integration plan. Focus on identifying key strengths, weaknesses, and opportunities for AI integration.
+    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+      {
+        role: "system",
+        content: `You are an AI integration expert. Analyze the following business information and create a comprehensive overview and integration plan. Focus on identifying key strengths, weaknesses, and opportunities for AI integration.
 
 Business Details:
 ${JSON.stringify(businessDetails, null, 2)}
@@ -36,28 +37,29 @@ Generate a detailed analysis in JSON format with the following structure:
   },
   "trainingNeeds": ["Training need 1", "Training need 2", ...],
   "complianceAndSecurity": ["Consideration 1", "Consideration 2", ...]
-}`
-    }]
+}`,
+      },
+    ];
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4-1106-preview",
       messages,
       response_format: { type: "json_object" },
       temperature: 0.7,
-    })
+    });
 
-    const content = completion.choices[0].message.content
+    const content = completion.choices[0].message.content;
     if (!content) {
-      throw new Error('No content received from OpenAI')
+      throw new Error("No content received from OpenAI");
     }
-    const parsedContent = JSON.parse(content)
+    const parsedContent = JSON.parse(content);
 
-    return NextResponse.json(parsedContent)
+    return NextResponse.json(parsedContent);
   } catch (error) {
-    console.error('Error generating overview:', error)
+    console.error("Error generating overview:", error);
     return NextResponse.json(
-      { error: 'Failed to generate business overview. Please try again.' },
+      { error: "Failed to generate business overview. Please try again." },
       { status: 500 }
-    )
+    );
   }
 }
